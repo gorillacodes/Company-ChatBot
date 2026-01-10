@@ -1,9 +1,7 @@
-python-dotenv
 streamlit
 langchain
 langchain-community
 langchain-groq
 faiss-cpu
 pypdf
-sentence-transformers==2.2.2
-torch==2.0.1
+fastembed

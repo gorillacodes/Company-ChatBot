@@ -2,7 +2,7 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import FastEmbedEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,9 +26,10 @@ def split_documents(documents):
     return splitter.split_documents(documents)
 
 def create_vectorstore(chunks):
-    embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-)
+    embeddings = FastEmbedEmbeddings(
+    model_name="BAAI/bge-small-en-v1.5"
+    )
+
     vectorstore = FAISS.from_documents(chunks, embeddings)
     vectorstore.save_local(VECTORSTORE_PATH)
 
