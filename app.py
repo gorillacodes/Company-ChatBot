@@ -12,8 +12,7 @@ if st.button("🔄 Rebuild Knowledge Base"):
         subprocess.run(["python", "ingest.py"])
     st.success("Knowledge base rebuilt successfully.")
 
-if "qa_chain" not in st.session_state:
-    st.session_state.qa_chain = get_rag_chain()
+
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
@@ -22,7 +21,11 @@ query = st.chat_input("Ask anything about Harry Potter...")
 
 if not query:
     st.stop()
-if query:
+
+    
+if "qa_chain" not in st.session_state:
+    with st.spinner("Loading magic from the books..."):
+        st.session_state.qa_chain = get_rag_chain()
     with st.spinner("Thinking..."):
         response = st.session_state.qa_chain.invoke({"query": query})
 
