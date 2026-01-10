@@ -5,6 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_classic.chains import RetrievalQA
 from dotenv import load_dotenv
 import streamlit as st
+from ingest import get_or_create_vectorstore
 
 load_dotenv()
 
@@ -15,11 +16,7 @@ def get_rag_chain():
     model_name="BAAI/bge-small-en-v1.5"
     )
 
-    vectorstore = FAISS.load_local(
-        VECTORSTORE_PATH,
-        embeddings,
-        allow_dangerous_deserialization=True
-    )
+    vectorstore = get_or_create_vectorstore(embeddings)
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 

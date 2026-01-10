@@ -2,7 +2,6 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import FastEmbedEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,18 +24,28 @@ def split_documents(documents):
     )
     return splitter.split_documents(documents)
 
-def create_vectorstore(chunks):
-    embeddings = FastEmbedEmbeddings(
-    model_name="BAAI/bge-small-en-v1.5"
+def get_or_create_vectorstore(embeddings):
+    
+    docs = []
+
+    for file in os.listdir("data/docs"):
+        if file.endswith(".pdf"):
+            loader = PyPDFLoader(os.path.join("data/docs", file))
+            docs.extend(loader.load())
+
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=800,
+        chunk_overlap=150
     )
+    chunks = splitter.split_documents(docs)
 
     vectorstore = FAISS.from_documents(chunks, embeddings)
-    vectorstore.save_local(VECTORSTORE_PATH)
+    return vectorstore
 
 def main():
     docs = load_documents()
     chunks = split_documents(docs)
-    create_vectorstore(chunks)
+    get_or_create_vectorstore(chunks)
     print(f"✅ Ingested {len(chunks)} chunks into FAISS")
 
 if __name__ == "__main__":
