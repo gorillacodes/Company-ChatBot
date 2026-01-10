@@ -1,8 +1,9 @@
+python-dotenv
+streamlit
 langchain
 langchain-community
 langchain-groq
 faiss-cpu
-streamlit
 pypdf
-python-dotenv
-sentence-transformers
+sentence-transformers==2.2.2
+torch==2.0.1
