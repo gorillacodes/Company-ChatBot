@@ -18,7 +18,7 @@ def get_rag_chain():
 
     vectorstore = get_or_create_vectorstore(embeddings)
 
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+    retriever = vectorstore.as_retriever(search_type = "similarity",search_kwargs={"k": 5})
 
     llm = ChatGroq(
         model="llama-3.3-70b-versatile",
@@ -28,21 +28,28 @@ def get_rag_chain():
 
     prompt = ChatPromptTemplate.from_template(
         """
-You are an AI assistant answering questions using ONLY the provided context.
-If the answer is not present, say: "I don’t have that information."
+You are a Harry Potter expert assistant.
+
+Answer the question strictly using the provided context from the Harry Potter books.
+If the answer is not present in the context, say:
+"I don't find that explicitly stated in the books."
+If multiple books are referenced in the context, base your answer on the most relevant one.
 
 Context:
 {context}
 
 Question:
 {question}
+
+Answer:
+- Be concise and factual.
+- Mention the book name if it is identifiable from the context.
 """
-    )
+)
 
     qa_chain = RetrievalQA.from_chain_type(
         llm=llm,
         retriever=retriever,
-        chain_type="stuff",
         chain_type_kwargs={"prompt": prompt},
         return_source_documents=True
     )

@@ -2,25 +2,29 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from dotenv import load_dotenv
 
-load_dotenv()
 
 DOCS_PATH = "data/docs"
-VECTORSTORE_PATH = "vectorstore"
+
 
 def load_documents():
     documents = []
-    for file in os.listdir(DOCS_PATH):
-        if file.endswith(".pdf"):
+    for file in sorted(os.listdir(DOCS_PATH)):
+        if file.lower().endswith(".pdf"):
             loader = PyPDFLoader(os.path.join(DOCS_PATH, file))
-            documents.extend(loader.load())
+            loaded_docs = loader.load()
+
+            book_name = file.replace(".pdf", "").replace("_","")
+            for d in loaded_docs:
+                d.metadata["book"] = book_name
+                d.metadata["source"] = book_name
+            documents.extend(load_documents)
     return documents
 
 def split_documents(documents):
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=150
+        chunk_size=1200,
+        chunk_overlap=300
     )
     return splitter.split_documents(documents)
 
