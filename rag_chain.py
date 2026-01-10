@@ -25,7 +25,7 @@ def get_rag_chain():
 
     llm = ChatGroq(
         model="llama-3.3-70b-versatile",
-        temperature=0
+        temperature=0,
         api_key = st.secrets["GROQ_API_KEY"],
     )
 
