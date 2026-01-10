@@ -41,6 +41,7 @@ for chat in st.session_state.chat_history:
         st.write(chat["answer"])
 
         with st.expander("Sources"):
-            for doc in response["source_documents"]:
-                st.markdown(f"- **{doc.metadata.get('source','Unknown')}**")
-
+            for doc in chat["sources"]:
+                st.markdown(
+                    f"- **{doc.metadata.get('source', 'Document')}**, page {doc.metadata.get('page', '')}"
+                )
