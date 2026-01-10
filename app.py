@@ -19,8 +19,7 @@ if "chat_history" not in st.session_state:
 
 query = st.chat_input("Ask your queries...")
 
-if query.strip() == "":
-    st.warning("Please enter a valid question.")
+if not query:
     st.stop()
 if query:
     with st.spinner("Thinking..."):
