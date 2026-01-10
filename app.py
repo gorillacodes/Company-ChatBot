@@ -4,7 +4,8 @@ import subprocess
 
 
 st.set_page_config(page_title="Leave Policy Bot", layout="wide")
-st.title("📘 CDC Leave Policy Bot")
+st.title("📚 Harry Potter Knowledge Bot")
+st.caption("Ask questions across all 7 Harry Potter books")
 
 if st.button("🔄 Rebuild Knowledge Base"):
     with st.spinner("Rebuilding vector store..."):
@@ -17,7 +18,7 @@ if "qa_chain" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-query = st.chat_input("Ask your queries...")
+query = st.chat_input("Ask anything about Harry Potter...")
 
 if not query:
     st.stop()
@@ -40,7 +41,6 @@ for chat in st.session_state.chat_history:
         st.write(chat["answer"])
 
         with st.expander("Sources"):
-            for doc in chat["sources"]:
-                st.markdown(
-                    f"- **{doc.metadata.get('source', 'Document')}**, page {doc.metadata.get('page', '')}"
-                )
+            for doc in response["source_documents"]:
+                st.markdown(f"- **{doc.metadata.get('source','Unknown')}**")
+
