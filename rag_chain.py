@@ -1,8 +1,8 @@
 import streamlit as st
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
-from langchain.chains import RetrievalQA
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.prompts import ChatPromptTemplate
 
 VECTORSTORE_PATH = "vectorstore"
 
@@ -44,12 +44,9 @@ Answer (include book name if possible):
 """
     )
 
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=retriever,
-        return_source_documents=True,
-        chain_type_kwargs={"prompt": prompt},
+    rag_chain = (
+        {"context":retriever,
+        "question": RunnablePassthrough()} | prompt | llm
     )
 
-    return qa_chain
+    return rag_chain

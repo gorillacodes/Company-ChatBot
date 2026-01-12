@@ -19,9 +19,9 @@ query = st.chat_input("Ask anything about Harry Potter...")
 
 if query:
     with st.spinner("Consulting the books..."):
-        response = st.session_state.qa_chain.invoke({"query": query})
+        response = st.session_state.qa_chain.invoke(query)
 
-        answer = response["result"]
+        answer = response.content
         sources = response["source_documents"]
 
         st.session_state.chat_history.append(
