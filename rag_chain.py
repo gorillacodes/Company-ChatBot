@@ -1,28 +1,19 @@
 import streamlit as st
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 
 VECTORSTORE_PATH = "vectorstore"
 
 
 def get_rag_chain():
-    # Load FAISS (prebuilt locally)
+    # Load FAISS index (prebuilt locally)
     vectorstore = FAISS.load_local(
         VECTORSTORE_PATH,
         embeddings=None,
         allow_dangerous_deserialization=True
     )
 
-    retriever = vectorstore.as_retriever(
-        search_kwargs={"k": 5}
-    )
-
-    # 🔑 Explicitly call retriever (prevents NoneType callable error)
-    retrieve_docs = RunnableLambda(
-        lambda question: retriever.invoke(question)
-    )
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
     llm = ChatGroq(
         model="llama-3.3-70b-versatile",
@@ -30,12 +21,22 @@ def get_rag_chain():
         api_key=st.secrets["GROQ_API_KEY"]
     )
 
-    prompt = ChatPromptTemplate.from_template(
-        """
+    def answer_question(question: str) -> str:
+        # 1. Retrieve documents
+        docs = retriever.invoke(question)
+
+        # 2. Build context manually
+        context = "\n\n".join(
+            f"[{d.metadata.get('book', 'Unknown')}] {d.page_content}"
+            for d in docs
+        )
+
+        # 3. Build prompt
+        prompt = f"""
 You are a Harry Potter expert assistant.
 
-Answer the question strictly using the provided context from the Harry Potter books.
-If the answer is not present in the context, say:
+Answer the question strictly using the context from the Harry Potter books.
+If the answer is not present, say:
 "I don't find that explicitly stated in the books."
 
 Context:
@@ -46,15 +47,9 @@ Question:
 
 Answer (include book name if possible):
 """
-    )
 
-    rag_chain = (
-        {
-            "context": retrieve_docs,
-            "question": RunnablePassthrough()
-        }
-        | prompt
-        | llm
-    )
+        # 4. Call LLM
+        response = llm.invoke(prompt)
+        return response.content
 
-    return rag_chain
+    return answer_question
