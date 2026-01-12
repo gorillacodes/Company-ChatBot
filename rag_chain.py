@@ -1,15 +1,20 @@
 import streamlit as st
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
+from langchain.embeddings import HuggingFaceEmbeddings
 
 VECTORSTORE_PATH = "vectorstore"
 
 
 def get_rag_chain():
-    # Load FAISS index (prebuilt locally)
+    # ✅ SAME embeddings used during ingest
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
+
     vectorstore = FAISS.load_local(
         VECTORSTORE_PATH,
-        embeddings=None,
+        embeddings=embeddings,
         allow_dangerous_deserialization=True
     )
 
@@ -21,22 +26,19 @@ def get_rag_chain():
         api_key=st.secrets["GROQ_API_KEY"]
     )
 
-    def answer_question(question: str) -> str:
-        # 1. Retrieve documents
+    def answer(question: str) -> str:
         docs = retriever.invoke(question)
 
-        # 2. Build context manually
         context = "\n\n".join(
-            f"[{d.metadata.get('book', 'Unknown')}] {d.page_content}"
+            f"[{d.metadata.get('book','Unknown')}] {d.page_content}"
             for d in docs
         )
 
-        # 3. Build prompt
         prompt = f"""
 You are a Harry Potter expert assistant.
 
-Answer the question strictly using the context from the Harry Potter books.
-If the answer is not present, say:
+Answer using only the context below.
+If not found, say:
 "I don't find that explicitly stated in the books."
 
 Context:
@@ -45,11 +47,8 @@ Context:
 Question:
 {question}
 
-Answer (include book name if possible):
+Answer:
 """
+        return llm.invoke(prompt).content
 
-        # 4. Call LLM
-        response = llm.invoke(prompt)
-        return response.content
-
-    return answer_question
+    return answer
