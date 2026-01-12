@@ -21,7 +21,7 @@ def get_rag_chain():
 
     # 🔑 Explicitly call retriever (prevents NoneType callable error)
     retrieve_docs = RunnableLambda(
-        lambda question: retriever.get_relevant_documents(question)
+        lambda question: retriever.invoke(question)
     )
 
     llm = ChatGroq(
