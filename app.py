@@ -20,13 +20,13 @@ query = st.chat_input("Ask anything about Harry Potter...")
 if query:
     with st.spinner("Consulting the books..."):
         answer = st.session_state.qa_chain(query)
-        sources = answer["source_documents"]
+        #sources = answer["source_documents"]
 
         st.session_state.chat_history.append(
             {
                 "question": query,
                 "answer": answer,
-                "sources": sources,
+                #"sources": sources,
             }
         )
 
