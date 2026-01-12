@@ -39,9 +39,9 @@ for chat in st.session_state.chat_history:
     with st.chat_message("assistant"):
         st.write(chat["answer"])
 
-        if chat["sources"]:
-            with st.expander("Sources"):
-                for doc in chat["sources"]:
-                    st.markdown(
-                        f"- **{doc.metadata.get('book', 'Unknown Book')}**, page {doc.metadata.get('page', '?')}"
-                    )
+        # if chat["sources"]:
+        #     with st.expander("Sources"):
+        #         for doc in chat["sources"]:
+        #             st.markdown(
+        #                 f"- **{doc.metadata.get('book', 'Unknown Book')}**, page {doc.metadata.get('page', '?')}"
+        #             )
