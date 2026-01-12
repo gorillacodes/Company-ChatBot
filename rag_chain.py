@@ -2,6 +2,7 @@ import streamlit as st
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_core.prompts import ChatPromptTemplate
 
 VECTORSTORE_PATH = "vectorstore"
 
@@ -18,7 +19,7 @@ def get_rag_chain():
         allow_dangerous_deserialization=True
     )
 
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 5})
 
     llm = ChatGroq(
         model="llama-3.3-70b-versatile",
@@ -34,11 +35,14 @@ def get_rag_chain():
             for d in docs
         )
 
-        prompt = f"""
+        prompt = ChatPromptTemplate.from_template(
+"""
 You are a Harry Potter expert assistant.
 
-Answer using only the context below.
-If not found, say:
+Use the provided context from the Harry Potter books to answer the question.
+If the context contains multiple references, combine them into a clear answer.
+
+If the answer is not clearly present, say:
 "I don't find that explicitly stated in the books."
 
 Context:
@@ -47,8 +51,9 @@ Context:
 Question:
 {question}
 
-Answer:
+Answer (mention book name if relevant):
 """
+)
         return llm.invoke(prompt).content
 
     return answer
