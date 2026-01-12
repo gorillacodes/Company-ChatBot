@@ -1,14 +1,14 @@
 import streamlit as st
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
-from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableLambda, RunnablePassthrough
 
 VECTORSTORE_PATH = "vectorstore"
 
 
 def get_rag_chain():
-    # Load FAISS WITHOUT embeddings
+    # Load FAISS (prebuilt locally)
     vectorstore = FAISS.load_local(
         VECTORSTORE_PATH,
         embeddings=None,
@@ -16,8 +16,12 @@ def get_rag_chain():
     )
 
     retriever = vectorstore.as_retriever(
-        search_type="similarity",
         search_kwargs={"k": 5}
+    )
+
+    # 🔑 Explicitly call retriever (prevents NoneType callable error)
+    retrieve_docs = RunnableLambda(
+        lambda question: retriever.get_relevant_documents(question)
     )
 
     llm = ChatGroq(
@@ -45,8 +49,12 @@ Answer (include book name if possible):
     )
 
     rag_chain = (
-        {"context":retriever,
-        "question": RunnablePassthrough()} | prompt | llm
+        {
+            "context": retrieve_docs,
+            "question": RunnablePassthrough()
+        }
+        | prompt
+        | llm
     )
 
     return rag_chain
