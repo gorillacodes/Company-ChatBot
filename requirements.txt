@@ -4,4 +4,4 @@ langchain-community
 langchain-groq
 faiss-cpu
 pypdf
-fastembed
+python-dotenv

@@ -1,41 +1,39 @@
 import streamlit as st
 from rag_chain import get_rag_chain
-import subprocess
 
+st.set_page_config(page_title="Harry Potter RAG Bot", layout="centered")
 
-st.set_page_config(page_title="Leave Policy Bot", layout="wide")
-st.title("📚 Harry Potter Knowledge Bot")
+st.title("🪄 Harry Potter Knowledge Bot")
 st.caption("Ask questions across all 7 Harry Potter books")
 
-if st.button("🔄 Rebuild Knowledge Base"):
-    with st.spinner("Rebuilding vector store..."):
-        subprocess.run(["python", "ingest.py"])
-    st.success("Knowledge base rebuilt successfully.")
-
-
+# Initialize session state
+if "qa_chain" not in st.session_state:
+    st.session_state.qa_chain = get_rag_chain()
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+
+# Chat input
 query = st.chat_input("Ask anything about Harry Potter...")
 
-if not query:
-    st.stop()
-
-    
-if "qa_chain" not in st.session_state:
-    with st.spinner("Loading magic from the books..."):
-        st.session_state.qa_chain = get_rag_chain()
-    with st.spinner("Thinking..."):
+if query:
+    with st.spinner("Consulting the books..."):
         response = st.session_state.qa_chain.invoke({"query": query})
 
-    answer = response["result"]
-    sources = response["source_documents"]
+        answer = response["result"]
+        sources = response["source_documents"]
 
-    st.session_state.chat_history.append(
-        {"question": query, "answer": answer, "sources": sources}
-    )
+        st.session_state.chat_history.append(
+            {
+                "question": query,
+                "answer": answer,
+                "sources": sources,
+            }
+        )
 
+
+# Render chat history
 for chat in st.session_state.chat_history:
     with st.chat_message("user"):
         st.write(chat["question"])
@@ -43,8 +41,9 @@ for chat in st.session_state.chat_history:
     with st.chat_message("assistant"):
         st.write(chat["answer"])
 
-        with st.expander("Sources"):
-            for doc in chat["sources"]:
-                st.markdown(
-                    f"- **{doc.metadata.get('source', 'Document')}**, page {doc.metadata.get('page', '')}"
-                )
+        if chat["sources"]:
+            with st.expander("Sources"):
+                for doc in chat["sources"]:
+                    st.markdown(
+                        f"- **{doc.metadata.get('book', 'Unknown Book')}**, page {doc.metadata.get('page', '?')}"
+                    )
